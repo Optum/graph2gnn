@@ -1,0 +1,50 @@
+// Schema
+CREATE VERTEX Paper (PRIMARY_ID id STRING, paper_id STRING, features List<INT> , label STRING) WITH primary_id_as_attribute="true"
+CREATE DIRECTED EDGE CITES(FROM Paper, TO Paper) WITH REVERSE_EDGE="R_CITES"
+CREATE GRAPH Cora(*)
+
+use graph Cora
+ls
+
+// load the graph
+drop job load_paper
+begin
+CREATE LOADING JOB load_paper FOR GRAPH Cora {
+  DEFINE FILENAME f;
+  LOAD f TO VERTEX Paper VALUES ($0, $1, SPLIT($3,"|"), $2) USING header="true", separator = ",";
+}
+end
+RUN LOADING JOB load_paper USING f="/app/tigergraph/Cora_vertices.csv"
+
+drop job load_cites
+begin
+CREATE LOADING JOB load_cites FOR GRAPH Cora {
+   DEFINE FILENAME f;
+   LOAD f TO EDGE CITES VALUES ($0, $1) USING header="true", separator = ",";
+}
+end
+RUN LOADING JOB load_cites USING f="/app/tigergraph/Cora_edges.csv"
+
+begin
+CREATE OR REPLACE QUERY clean_data() FOR GRAPH Cora{
+	S = {Paper.*};
+  DELETE s FROM S:s WHERE s.id == "";
+}
+end
+install query clean_data
+RUN QUERY clean_data()
+
+// install the query
+begin
+CREATE QUERY CoraData() FOR GRAPH Cora{
+	SetAccum<Edge> @@edges;
+	PaperSrc = {Paper.*};
+
+	PaperResult = SELECT s FROM PaperSrc:s -(CITES:e)-> Paper:tgt
+				  ACCUM @@edges += e;
+
+	PRINT @@edges as _edges; 
+	PRINT PaperSrc;
+}
+end
+install query CoraData

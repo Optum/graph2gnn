@@ -1,0 +1,10 @@
+graph2gnn
+
+Copyright 2022 Optum
+
+Project Description:
+====================
+A library to get from a graph DB to GNN training data in less time
+
+Contributors:
+@rrossmiller - primary developer

@@ -1,0 +1,9 @@
+use global
+drop job load_atoms
+drop job load_bonds
+drop query clean_data
+drop query QM7bData
+drop graph QM7b
+drop edge BOND
+drop VERTEX Atom
+ls

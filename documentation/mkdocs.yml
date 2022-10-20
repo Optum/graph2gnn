@@ -1,0 +1,59 @@
+site_name: 'graph2gnn'
+nav:
+  - graph2gnn: index.md
+  - Examples:
+    - Examples: examples/examples.md
+    - Node-Level: examples/node-level.md
+    # - Discrete Graphs: examples/discrete-graph.md
+    - Subgraphs: examples/ego-graph.md
+  - About:
+    - About: about/about.md
+
+repo_name: 'graph2gnn'
+repo_url: 'https://github.com/Optum/graph2gnn'
+copyright: 'Copyright &copy; 2022 Optum'
+theme:
+  name: material
+  palette:
+    - scheme: slate
+      # media: "(prefers-color-scheme: light)" 
+      primary: 'blue grey'
+      accent: 'blue grey'
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - scheme: default
+      # media: "(prefers-color-scheme: dark)"
+      primary: 'blue grey'
+      accent: 'blue grey'
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tabs
+  custom_dir: 'theme'
+  favicon: img/favicon.ico
+  logo: img/g2gnn.png
+  font:
+    text: Arial
+    code: Roboto Mono
+extra_css:
+  - styles/theme.css
+plugins:
+  - search
+markdown_extensions:
+  - attr_list
+  - md_in_html
+  - admonition
+  - footnotes
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences 
+
+extra_css:
+- styles/extra.css

@@ -1,0 +1,60 @@
+// schema
+use global
+CREATE VERTEX Atom (PRIMARY_ID id STRING, graph_id UINT, label LIST<DOUBLE>) WITH primary_id_as_attribute="true"
+CREATE UNDIRECTED EDGE BOND(FROM Atom, TO Atom, h FLOAT)
+CREATE GRAPH QM7b(Atom, BOND)
+
+
+use graph QM7b
+ls
+//load the graph
+drop job load_atoms
+begin
+CREATE LOADING JOB load_atoms FOR GRAPH QM7b {
+  DEFINE FILENAME f;
+  LOAD f TO VERTEX Atom VALUES ($0, $1, SPLIT($2,"|")) USING header="true", separator = ",";
+}
+end
+RUN LOADING JOB load_atoms USING f="/app/tigergraph/QM7B_vertices.csv"
+
+drop job load_bonds
+begin
+CREATE LOADING JOB load_bonds FOR GRAPH QM7b {
+   DEFINE FILENAME f;
+   LOAD f TO EDGE BOND VALUES ($0, $1, $2) USING header="true", separator = ",";
+}
+end
+RUN LOADING JOB load_bonds USING f="/app/tigergraph/QM7B_edges.csv"
+
+begin
+CREATE OR REPLACE QUERY clean_data() FOR GRAPH QM7b{
+	S = {Atom.*};
+  DELETE s FROM S:s WHERE s.id == "";
+}
+end
+install query clean_data
+RUN QUERY clean_data()
+
+use graph QM7b
+drop query QM7bData
+
+// install the query
+begin
+CREATE QUERY QM7bData(INT total_partitions=0, INT current_partition) FOR GRAPH QM7b{
+	SetAccum<Edge> @edges;
+  MaxAccum<VERTEX> @lead_node;
+
+	AtomSrc = {Atom.*};
+
+	AtomResult = SELECT s FROM AtomSrc:s -(_:e)-> Atom:t
+						ACCUM s.@edges += e,
+                  IF s.label.size() > 0 THEN
+                    s.@lead_node += s,
+                    t.@lead_node += s
+                  END;
+  AtomResult = SELECT s FROM AtomResult:s 
+					 	    WHERE vertex_to_int(s) % total_partitions == current_partition;
+	PRINT AtomResult;
+}
+end
+install query QM7bData

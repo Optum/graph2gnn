@@ -1,0 +1,23 @@
+[data-md-color-primary="orange"] .md-nav__source {
+    background-color: #C25608;
+}
+
+[data-md-color-primary="orange"] .md-header {
+    background-color: #C25608;
+}
+
+[data-md-color-primary="orange"] .md-tabs {
+    background-color: #C25608;
+}
+
+[data-md-color-primary="grey"] .md-nav__source {
+    background-color: #434448;
+}
+
+[data-md-color-primary="grey"] .md-header {
+    background-color: #434448;
+}
+
+[data-md-color-primary="grey"] .md-tabs {
+    background-color: #434448;
+}

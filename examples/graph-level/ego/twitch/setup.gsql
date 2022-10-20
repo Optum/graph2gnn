@@ -1,0 +1,88 @@
+drop job load_users
+drop job load_friends
+drop job load_friendships
+drop query TwitchEgosData
+drop graph TwitchEgos
+drop edge FRIENDSHIP
+drop VERTEX User
+drop Vertex Friend
+
+// Schema
+CREATE VERTEX User (PRIMARY_ID id INT, label INT) WITH primary_id_as_attribute="true"
+CREATE VERTEX Friend (PRIMARY_ID id INT) WITH primary_id_as_attribute="true"
+CREATE UNDIRECTED EDGE FRIENDSHIP(FROM User, TO Friend | FROM Friend, TO User | FROM Friend, TO Friend) 
+CREATE GRAPH TwitchEgos(User, Friend, FRIENDSHIP)
+
+use graph TwitchEgos
+ls
+
+// load the graph
+drop job load_users
+begin
+CREATE LOADING JOB load_users FOR GRAPH TwitchEgos {
+  DEFINE FILENAME f;
+  LOAD f TO VERTEX User VALUES ($0, $1) USING header="true", separator = ",";
+}
+end
+RUN LOADING JOB load_users USING f="/app/tigergraph/Twitch_users.csv"
+
+
+drop job load_friends
+begin
+CREATE LOADING JOB load_friends FOR GRAPH TwitchEgos {
+  DEFINE FILENAME f;
+  LOAD f TO VERTEX Friend VALUES ($0) USING header="true", separator = ",";
+}
+end
+RUN LOADING JOB load_friends USING f="/app/tigergraph/Twitch_friends.csv"
+
+drop job load_friendships
+begin
+CREATE LOADING JOB load_friendships FOR GRAPH TwitchEgos {
+   DEFINE FILENAME f;
+   LOAD f TO EDGE FRIENDSHIP VALUES ($0 $1, $2 $3) USING header="true", separator = ",";
+}
+end
+RUN LOADING JOB load_friendships USING f="/app/tigergraph/Twitch_edges.csv"
+
+// install the query
+begin
+CREATE QUERY TwitchEgosData(INT current_partition=0, INT total_partitions=100) FOR GRAPH TwitchEgos SYNTAX V2{
+    TYPEDEF TUPLE <INT from_id, INT to_id> Edges; // GNN train type
+    TYPEDEF TUPLE <INT id, STRING t> Vert; // GNN train type
+    
+    // Accumulators for tracking edges and involved Vertices
+    MaxAccum<INT> @graph_id, @id;
+    MapAccum<INT, SetAccum<Edges>> @@edges;
+    MapAccum<INT, SetAccum<Vert>> @@graph;
+    
+    Users = {User.*};
+    Users = SELECT s FROM Users:s 
+            WHERE vertex_to_int(s) % total_partitions == current_partition
+            ACCUM s.@id += s.id,
+              @@graph += (s.id -> Vert(s.id, s.type));
+
+    // max 2-hop graph (this should be enough to encompas all subgraphs anyway)
+    Friends1 = SELECT u FROM Users:s -(FRIENDSHIP:e)- Friend:u
+               WHERE s.label >= 0
+               ACCUM u.@id += u.id,
+                 @@edges += (s.id -> Edges(s.id, u.id)),
+                 @@graph += (s.id -> Vert(u.id, u.type));
+
+    Friends2 = SELECT tgt FROM Users:s -(FRIENDSHIP:e)- _:u -(FRIENDSHIP:e)- Friend:tgt
+               WHERE s.label >= 0 
+               ACCUM tgt.@id += tgt.id,
+                 @@edges += (s.id -> Edges(u.id, tgt.id)),
+                 @@graph += (s.id -> Vert(tgt.id, tgt.type));
+
+	Friends = Friends1 UNION Friends2;
+	
+    PRINT @@edges AS _edges; 
+    PRINT @@graph AS _graph;
+    PRINT Users;
+    PRINT Friends;
+}
+end
+install query TwitchEgosData
+
+show user
