@@ -80,11 +80,15 @@
     
       
 
+
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
+
+    <!-- 
       <a href="/" target="_blank" title="graph2gnn" class="md-header__button" aria-label="graph2gnn">
-			<img src="img/logo.svg" style="width: 200px;">
-    </a>
+        <img src="../img/logo.svg" style="width: 200px;">
+      </a>
+   -->
     <label class="md-header__button md-icon" for="__drawer">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
     </label>
@@ -258,7 +262,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="graph2gnn" class="md-nav__button md-logo" aria-label="graph2gnn" data-md-component="logo">
       
-  <img src="../../img/white.png" alt="logo">
+  <img src="../../img/g2gnn.png" alt="logo">
 
     </a>
     graph2gnn
@@ -467,8 +471,15 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#dgl-nn" class="md-nav__link">
-    DGL NN
+  <a href="#model-building-and-training" class="md-nav__link">
+    Model building and training
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    Conclusion
   </a>
   
 </li>
@@ -672,8 +683,15 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#dgl-nn" class="md-nav__link">
-    DGL NN
+  <a href="#model-building-and-training" class="md-nav__link">
+    Model building and training
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    Conclusion
   </a>
   
 </li>
@@ -707,9 +725,9 @@
 <p>Node classification on the <a href="https://paperswithcode.com/dataset/cora" target="_blank">Cora benchmark</a> dataset from a TigerGraph DB using g2gnn.</p>
 <h3 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h3>
 <p>Node classification, especially with the Cora dataset, is a common "Hello, world" for GNNs. The dataset is a single, homogenious graph of 2708 academic papers on 7 different topics. The edges between the papers represent one paper citing the works of the other. The task is to use the contents of each paper (one-hot encoded word-vectors) and the graph to determine which topic the paper is about.</p>
-<p>The example code is <a href="https://github.com/Optum/graph2gnn/tree/main/examples/node-level/cora">HERE</a>. Clone the repo, <a href="../..#installation">install g2gnn</a>, and navigate to the node-level/cora dir under examples. Details are below.</p>
+<p>The example code is <a href="https://github.com/Optum/graph2gnn/tree/main/examples/node-level/cora">HERE</a>. First, <a href="../..#installation">install g2gnn</a> and navigate to the node-level/cora directory under examples. Details are below.</p>
 <h3 id="load-the-data">Load the Data<a class="headerlink" href="#load-the-data" title="Permanent link">&para;</a></h3>
-<p>Once you have stood up your tigergraph instance<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup>, you can generate the files to load the data to graph by running <a href="https://github.com/Optum/graph2gnn/tree/main/examples/node-level/cora/setup.gsql">prepare_graph.ipynb</a>. When it's done, copy the files to your env. You should be able to run <a href="https://github.com/Optum/graph2gnn/tree/main/examples/node-level/cora/setup.gsql">setup.gsql</a> in the gsql shell to generate the schema, CoraGraph, load the data and finally install the query.</p>
+<p>Once you have stood up your tigergraph instance<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup>, you can generate the files to load the data to graph by running <a href="https://github.com/Optum/graph2gnn/tree/main/examples/node-level/cora/prepare_graph.ipynb">prepare_graph.ipynb</a>. When it's done, copy the files to your env. You should be able to run <a href="https://github.com/Optum/graph2gnn/tree/main/examples/node-level/cora/setup.gsql">setup.gsql</a> in the gsql shell to generate the schema, CoraGraph, load the data and finally install the query.</p>
 <h3 id="the-query">The Query<a class="headerlink" href="#the-query" title="Permanent link">&para;</a></h3>
 <p>The query, found at the bottom of <a href="https://github.com/Optum/graph2gnn/tree/main/examples/node-level/cora/setup.gsql">setup.gsql</a>, is responsible for gathering the data and the graphy info that the model will train on.</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1"> 1</a></span>
@@ -750,31 +768,89 @@
 </code></pre></div></td></tr></table></div>
 <h2 id="write-a-subclass-for-tiger2gnn">Write a subclass for Tiger2GNN<a class="headerlink" href="#write-a-subclass-for-tiger2gnn" title="Permanent link">&para;</a></h2>
 <p>At this point, you should have a the Cora citation graph loaded to your TG instance. Now we'll begin to walk through the python code in [node-classification] to get the data and train a 2-hop GCN. Feel free to write to write your own code and use the docs and example code as a guide.</p>
-<p>The first cell initializes Cora2GNN, which is subclassed from Tiger2GNN. Subclassing is a convenient way to organize all the code around gathering data from the graph and making it ready for training and validation.</p>
-<p>When you initialize the object from your subclass (or just the Tiger2GNN class), you must pass in the host, graph_name, the query you'll call and any credential info (e.g. the restpp token)</p>
+<p>The first cell initializes Cora2GNN, which is subclassed from Tiger2GNN. Subclassing is a convenient way to organize all the code around gathering data from the graph and making it ready for training.</p>
+<p>When you initialize the object from your subclass (or just the Tiger2GNN class), you must pass in the host, graph_name, the query you will call and any credential info (e.g. the restpp token)
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">class</span> <span class="nc">Cora2GNN</span><span class="p">(</span><span class="n">Tiger2GNN</span><span class="p">):</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>        <span class="o">...</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="k">def</span> <span class="nf">compute_vertex_vectors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>        <span class="o">...</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="k">def</span> <span class="nf">assemble_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">samples_per_class</span><span class="p">):</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        <span class="o">...</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="n">tg</span> <span class="o">=</span> <span class="n">Cora2GNN</span><span class="p">(</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>    <span class="n">host</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;https://</span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>    <span class="n">graph_name</span><span class="o">=</span><span class="s2">&quot;Cora&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>    <span class="n">query</span><span class="o">=</span><span class="s2">&quot;CoraData&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>    <span class="n">token</span><span class="o">=</span><span class="n">tkn</span><span class="p">,</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="p">)</span>
+</code></pre></div></p>
 <h3 id="singlegraph-query-method">Singlegraph Query Method<a class="headerlink" href="#singlegraph-query-method" title="Permanent link">&para;</a></h3>
-<p>The call_singlegraph_query calls a query written in the form described above. If there are any parameters, such as partitioning values, pass them in to the params argument. Call the method to get the data.</p>
+<p>The call_singlegraph_query calls a query written in the form described above. If there are any parameters, such as partitioning values, pass them in to the params argument. Call the method to get the data.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">tg</span><span class="o">.</span><span class="n">call_singlegraph_query</span><span class="p">()</span>
+</code></pre></div></p>
 <h4 id="note">Note:<a class="headerlink" href="#note" title="Permanent link">&para;</a></h4>
-<p>At this point, g2gnn has done its job. You can use the resulting data in any way you wish. What follows is a guide to build the output from call_singlegraph_query into a GCN.</p>
+<p>At this point, g2gnn has done its job. You can use the resulting data in any way you wish! What follows is a guide to build the output from call_singlegraph_query into a GCN.</p>
 <h3 id="exploratory-data-analysis">Exploratory Data Analysis<a class="headerlink" href="#exploratory-data-analysis" title="Permanent link">&para;</a></h3>
 <p>Once the data has been stored locally, if the data is still raw, here is when you would do your EDA, feature selection, etc. No EDA is needed for this example, since the graph stores the features directly. When the method is finished, the tg response directory will contain the following structure
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>project-root
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>└── tgresponse/
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    ├── subgraph/               (empty dir)
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    ├── parts/
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    │   └── partition_0.json  (whole query responses, saved by partition)
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    ├── PaperSrc.json         (vertex set response... create vectors from these files)
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    ├── edges.csv               *(adjacency info... will become a model input)
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>└── node-classification.ipynb
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>project-root
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>└── tgresponse/
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    ├── subgraph/               (empty dir)
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    ├── parts/
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    │   └── partition_0.json  (whole query responses, saved by partition)
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    ├── PaperSrc.json         (vertex set response... create vectors from these files)
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    ├── edges.csv               *(adjacency info... will become a model input)
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>└── node-classification.ipynb
 </code></pre></div></p>
 <h3 id="compute_vertex_vectors">compute_vertex_vectors<a class="headerlink" href="#compute_vertex_vectors" title="Permanent link">&para;</a></h3>
-<p>The first of the custom methods in the Cora2GNN subclass is used to compute, or in this case organize, the vectors that will represent each vertex</p>
+<p>The first of the custom methods in the Cora2GNN subclass is used to compute, or in this case organize, the vectors that will represent each vertex.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">tg</span><span class="o">.</span><span class="n">compute_vertex_vectors</span><span class="p">()</span>
+</code></pre></div></p>
 <h3 id="assemblesplit">assemble/split<a class="headerlink" href="#assemblesplit" title="Permanent link">&para;</a></h3>
-<p>The next cell show the label split and some other dataset metrics. Here's a good place to have a sanity check -- there should be 2708 total labels</p>
-<p>Within this cell, the second custom method of in the Cora2GNN subclass is called. In this notebook, assemble_data organizes</p>
+<p>The next cell shows the label split and some other dataset metrics. Here's a good place to have a sanity check -- there should be 2708 total labels since there are 2708 nodes in the graph.</p>
+<p>Within this cell, the second custom method of in the Cora2GNN subclass is called. In this notebook, assemble_data organizes the datset into train, eval and test datasets.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">tg</span><span class="o">.</span><span class="n">assemble_data</span><span class="p">(</span><span class="n">samples_per_class</span><span class="o">=</span><span class="n">samples_per_class</span><span class="p">)</span>
+</code></pre></div></p>
 <h2 id="dgl">DGL<a class="headerlink" href="#dgl" title="Permanent link">&para;</a></h2>
+<p>Now the graph data is ready. From this point on, feel free to continue in whichever graph-ML library is your preference. this example continues in pytorch-flavored <a href="https://www.dgl.ai">DGL</a>.</p>
 <h3 id="dgl-dataset">DGL Dataset<a class="headerlink" href="#dgl-dataset" title="Permanent link">&para;</a></h3>
-<h3 id="dgl-nn">DGL NN<a class="headerlink" href="#dgl-nn" title="Permanent link">&para;</a></h3>
+<p>Following the dgl doc's for <a href="https://docs.dgl.ai/tutorials/blitz/6_load_data.html">making your own dataset</a>, we subclass DGLDataset class and override the <code>__getitem__</code>, <code>__len__</code>, and <code>process</code> methods. When constructing the graph, keep in mind that node IDs are 0-indexed. Any node IDs used previously need to be tranlated into the ID-space for DGL. This is handled in <a href="https://github.com/Optum/graph2gnn/tree/main/examples/node-level/cora/prepare_graph.ipynb">prepare_graph.ipynb</a>, but you will need to do this if you use DGL for your own solutions.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">class</span> <span class="nc">CoraDataset</span><span class="p">(</span><span class="n">DGLDataset</span><span class="p">):</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_nodes</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>        <span class="k">return</span> <span class="mi">1</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>        <span class="o">...</span>
+</code></pre></div>
+<h3 id="model-building-and-training">Model building and training<a class="headerlink" href="#model-building-and-training" title="Permanent link">&para;</a></h3>
+<p>Again, following <a href="https://docs.dgl.ai/tutorials/blitz/1_introduction.html#defining-a-graph-convolutional-network-gcn">DGL's docs</a> and <a href="https://arxiv.org/pdf/1609.02907.pdf">Kipf's GCN paper</a>, the model is constructed and trained in the following cells.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">class</span> <span class="nc">GCN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_feats</span><span class="p">,</span> <span class="n">h_feats</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">GraphConv</span><span class="p">(</span><span class="n">in_feats</span><span class="p">,</span> <span class="n">h_feats</span><span class="p">)</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">GraphConv</span><span class="p">(</span><span class="n">h_feats</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">d1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">drop</span><span class="p">)</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">in_feat</span><span class="p">):</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>        <span class="n">h</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">in_feat</span><span class="p">)</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>        <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>        <span class="n">h</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>        <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>        <span class="k">return</span> <span class="n">h</span>
+</code></pre></div></p>
+<h3 id="conclusion">Conclusion<a class="headerlink" href="#conclusion" title="Permanent link">&para;</a></h3>
+<p>If all went well, your model should have a test accuracy of ~83%.</p>
+<p>Congrats on getting to the end! A lot of problems can be modeled as a single graph where node classification or link prediction is the task. If your problem is better suited as graph-level predictions, check out the <a href="../ego-graph/">graph-level g2gnn</a> example module.</p>
 <div class="footnote">
 <hr />
 <ol>

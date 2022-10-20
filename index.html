@@ -80,11 +80,15 @@
     
       
 
+
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
+
+    <!--  -->
       <a href="/" target="_blank" title="graph2gnn" class="md-header__button" aria-label="graph2gnn">
-			<img src="img/logo.svg" style="width: 200px;">
-    </a>
+	  		<img src="img/logo.svg" style="width: 200px;">
+      </a>
+    <!--  -->
     <label class="md-header__button md-icon" for="__drawer">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
     </label>
@@ -258,7 +262,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="." title="graph2gnn" class="md-nav__button md-logo" aria-label="graph2gnn" data-md-component="logo">
       
-  <img src="img/white.png" alt="logo">
+  <img src="img/g2gnn.png" alt="logo">
 
     </a>
     graph2gnn
@@ -571,7 +575,7 @@
 Example of a GCN from Ying et al., 2018<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup></p>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p>Graph2GNN in 3 sentences... Write a query (with the guidance in the docs) to get data in your graph. Graph2GNN will take care of extracting the data in a way that separates the data from the graph's structure. Perform EDA and prepare the vectors, then recombine it with the graph-structure files for use in graph-based ML.</p>
-<p>To see in-depth examples, <a href="documentation/documentation.md">check out the docs</a></p>
+<p>To see in-depth examples, <a href="examples/examples/">check out the examples</a></p>
 <h4 id="a-simple-node-classification-example">A simple node-classification example<a class="headerlink" href="#a-simple-node-classification-example" title="Permanent link">&para;</a></h4>
 <p>To get the data out of Tigergraph, write a query that follows this format:
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">QUERY</span><span class="w"> </span><span class="n">cora_data</span><span class="o">()</span><span class="w"> </span><span class="k">FOR</span><span class="w"> </span><span class="k">GRAPH</span><span class="w"> </span><span class="n">CoraGraph</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
