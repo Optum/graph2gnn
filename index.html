@@ -574,8 +574,8 @@
 <p><img alt="graph2gnn" src="img/g2gnn.png" title="g2gnn" />
 Example of a GCN from Ying et al., 2018<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup></p>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
-<p>Graph2GNN in 3 sentences... Write a query (with the guidance in the docs) to get data in your graph. Graph2GNN will take care of extracting the data in a way that separates the data from the graph's structure. Perform EDA and prepare the vectors, then recombine it with the graph-structure files for use in graph-based ML.</p>
-<p>To see in-depth examples, <a href="examples/examples/">check out the examples</a></p>
+<p>Graph2GNN in 3 sentences... Write a query (with the guidance in the docs) to get data in your graph. Graph2GNN will take care of extracting the data in a way that separates the data from the graph's structure. Perform EDA and prepare the vectors, then recombine it with the graph-structure files for use in graph-based ML (not only GNNs).</p>
+<p>To see in-depth walk-throughs, <a href="examples/examples/">check out the examples</a></p>
 <h4 id="a-simple-node-classification-example">A simple node-classification example<a class="headerlink" href="#a-simple-node-classification-example" title="Permanent link">&para;</a></h4>
 <p>To get the data out of Tigergraph, write a query that follows this format:
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">QUERY</span><span class="w"> </span><span class="n">cora_data</span><span class="o">()</span><span class="w"> </span><span class="k">FOR</span><span class="w"> </span><span class="k">GRAPH</span><span class="w"> </span><span class="n">CoraGraph</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
@@ -589,7 +589,7 @@ Example of a GCN from Ying et al., 2018<sup id="fnref:1"><a class="footnote-ref"
 <a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="k">PRINT</span><span class="w"> </span><span class="n">PaperSrc</span><span class="o">;</span><span class="w"></span>
 <a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="p">}</span><span class="w"></span>
 </code></pre></div></p>
-<p>The query can be as simple or complex as need be. For getting one subgraph out, you need the <code>@@edges</code> SetAccum and a vertex set. Additional techniques for graph classification are described in the documentation, <a href="documentation/documentation.md">here</a>.</p>
+<p>The query can be as simple or complex as need be. For getting one subgraph out, you need to print the <code>@@edges</code> SetAccum and a vertex set. Additional techniques for graph classification are described in the documentation, <a href="examples/examples/">here</a>.</p>
 <p>Once the query is done, move to your python code.</p>
 <p><div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span> <span class="nn">graph2gnn</span> <span class="kn">import</span> <span class="n">Tiger2GNN</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">class</span> <span class="nc">Cora2GNN</span><span class="p">(</span><span class="n">Tiger2GNN</span><span class="p">):</span>
@@ -619,6 +619,7 @@ Turning your raw data into vectors and determining the labels are something G2GN
 <a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    ├── edges.csv               *(adjacency info... will become a model input)
 <a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>└── your_app.py (or .ipynb)
 </code></pre></div></p>
+<p>Again, for an in-depth walkthough, <a href="examples/examples/">check out the examples</a>.</p>
 <hr />
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
 <p>Install from the source:
