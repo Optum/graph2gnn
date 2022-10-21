@@ -7,7 +7,7 @@ import requests as req
 import logging
 import pandas as pd
 
-from graph2gnn.exceptions import QueryExceiption
+from graph2gnn.exceptions import QueryException
 
 
 class Tiger2GNN:
@@ -117,7 +117,7 @@ class Tiger2GNN:
             )
             check = self.check_response(response, start_time)
             if check[0] == 1:
-                raise QueryExceiption(check[1])
+                raise QueryException(check[1])
 
             with open(partition_path, "w") as f:
                 json.dump(response.json(), f, indent=1)
@@ -327,9 +327,9 @@ class Tiger2GNN:
             response = self.call_or_read_query(params, partition_path, query_url, start)
             keys = [list(x.keys())[0] for x in response["results"]]
             if "_edges" not in keys:
-                raise QueryExceiption("_edges not in query response")
+                raise QueryException("_edges not in query response")
             elif "_graph" not in keys:
-                raise QueryExceiption("_graph not in query response")
+                raise QueryException("_graph not in query response")
 
             # parse the response
             for v_set in response["results"]:
