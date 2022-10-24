@@ -47,12 +47,12 @@ RUN LOADING JOB load_friendships USING f="/app/tigergraph/Twitch_edges.csv"
 
 // install the query
 begin
-CREATE QUERY TwitchEgosData(INT current_partition=0, INT total_partitions=100) FOR GRAPH TwitchEgos SYNTAX V2{
+CREATE QUERY TwitchEgosData(INT current_partition=0, INT total_partitions=10) FOR GRAPH TwitchEgos SYNTAX V2{
     TYPEDEF TUPLE <INT from_id, INT to_id> Edges; // GNN train type
-    TYPEDEF TUPLE <INT id, STRING t> Vert; // GNN train type
+    TYPEDEF TUPLE <INT id, STRING v_type> Vert; // GNN train type
     
-    // Accumulators for tracking edges and involved Vertices
-    MaxAccum<INT> @graph_id, @id;
+    // Accumulators for tracking edges and involved vertices 
+    MaxAccum<INT> @id;
     MapAccum<INT, SetAccum<Edges>> @@edges;
     MapAccum<INT, SetAccum<Vert>> @@graph;
     
@@ -65,15 +65,15 @@ CREATE QUERY TwitchEgosData(INT current_partition=0, INT total_partitions=100) F
     // max 2-hop graph (this should be enough to encompas all subgraphs anyway)
     Friends1 = SELECT u FROM Users:s -(FRIENDSHIP:e)- Friend:u
                WHERE s.label >= 0
-               ACCUM u.@id += u.id,
-                 @@edges += (s.id -> Edges(s.id, u.id)),
-                 @@graph += (s.id -> Vert(u.id, u.type));
+               ACCUM u.@id += getvid(u),
+                     @@edges += (getvid(s) -> Edges(getvid(s), getvid(u))),
+                     @@graph += (getvid(s) -> Vert(getvid(u), u.type));
 
     Friends2 = SELECT tgt FROM Users:s -(FRIENDSHIP:e)- _:u -(FRIENDSHIP:e)- Friend:tgt
                WHERE s.label >= 0 
-               ACCUM tgt.@id += tgt.id,
-                 @@edges += (s.id -> Edges(u.id, tgt.id)),
-                 @@graph += (s.id -> Vert(tgt.id, tgt.type));
+               ACCUM tgt.@id += getvid(tgt),
+                     @@edges += (getvid(s) -> Edges(getvid(u), getvid(tgt))),
+                     @@graph += (getvid(s) -> Vert(getvid(tgt), tgt.type));
 
 	Friends = Friends1 UNION Friends2;
 	

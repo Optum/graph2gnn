@@ -366,7 +366,7 @@ class Tiger2GNN:
                     elif key == "_graph":
                         for v in v_set[key].keys():
                             for vert in v_set[key][v]:
-                                arr.append((vert["id"], vert["vType"]))
+                                arr.append((vert["id"], vert["v_type"]))
                             pd.DataFrame(arr, columns=["id", "v_type"]).to_csv(
                                 f"{self.output_path}/subgraph/{v}_graph.csv",
                                 index=False,

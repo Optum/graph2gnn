@@ -5,7 +5,7 @@ nav:
     - Examples: examples/examples.md
     - Node-Level: examples/node-level.md
     # - Discrete Graphs: examples/discrete-graph.md
-    - Subgraphs: examples/ego-graph.md
+    - Graph-Level: examples/ego-graph.md
   - About:
     - About: about/about.md
 

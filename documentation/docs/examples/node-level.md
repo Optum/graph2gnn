@@ -1,5 +1,5 @@
 # Node Classification
-Node classification on the <a href="https://paperswithcode.com/dataset/cora" target="_blank">Cora benchmark</a> dataset from a TigerGraph DB using g2gnn.
+Node classification on the <a href="https://paperswithcode.com/dataset/cora" target="_blank">Cora benchmark</a> dataset from a TigerGraph DB using g2gnn and DGL.
 
 ### Overview
 Node classification, especially with the Cora dataset, is a common "Hello, world" for GNNs. The dataset is a single, homogenious graph of 2708 academic papers on 7 different topics. The edges between the papers represent one paper citing the works of the other. The task is to use the contents of each paper (one-hot encoded word-vectors) and the graph to determine which topic the paper is about.
@@ -13,7 +13,7 @@ Once you have stood up your tigergraph instance[^1], you can generate the files 
 
 The query, found at the bottom of [setup.gsql], is responsible for gathering the data and the graphy info that the model will train on.
 
-```sql linenums="1"
+```gsql linenums="1"
 CREATE QUERY CoraData() FOR GRAPH Cora{
 	SetAccum<Edge> @@edges;
 	PaperSrc = {Paper.*};
@@ -34,7 +34,7 @@ NOTE: It's critical that the edges accumulator is printed as `_edges` (line 8). 
 
 FOR LARGE GRAPHS: Graph2GNN is fully compatible with partioned queries. Replace the beginning of the query with the following lines to return smaller chunks that g2gnn will piece back together.
 
-```sql linenums="1"
+```gsql linenums="1"
 CREATE QUERY CoraData(INT total_partitions=0, INT current_partition) FOR GRAPH Cora{
 	SetAccum<Edge> @@edges;
 	PaperSrc = {Paper.*};
@@ -44,7 +44,7 @@ CREATE QUERY CoraData(INT total_partitions=0, INT current_partition) FOR GRAPH C
 ```
 
 ## Write a subclass for Tiger2GNN
-At this point, you should have a the Cora citation graph loaded to your TG instance. Now we'll begin to walk through the python code in [node-classification] to get the data and train a 2-hop GCN. Feel free to write to write your own code and use the docs and example code as a guide.
+At this point, you should have a the Cora citation graph loaded to your TG instance. Now we'll begin to walk through the python code in [node-classification.ipynb] to get the data and train a 2-hop GCN. Feel free to write to write your own code and use the docs and example code as a guide.
 
 The first cell initializes Cora2GNN, which is subclassed from Tiger2GNN. Subclassing is a convenient way to organize all the code around gathering data from the graph and making it ready for training.
 
@@ -75,7 +75,7 @@ The call_singlegraph_query calls a query written in the form described above. If
 tg.call_singlegraph_query()
 ```
 
-#### Note:
+#### Note
 At this point, g2gnn has done its job. You can use the resulting data in any way you wish! What follows is a guide to build the output from call_singlegraph_query into a GCN.
 
 ### Exploratory Data Analysis
@@ -109,7 +109,7 @@ tg.assemble_data(samples_per_class=samples_per_class)
 Now the graph data is ready. From this point on, feel free to continue in whichever graph-ML library is your preference. this example continues in pytorch-flavored [DGL].
 
 ### DGL Dataset
-Following the dgl doc's for [making your own dataset], we subclass DGLDataset class and override the `__getitem__`, `__len__`, and `process` methods. When constructing the graph, keep in mind that node IDs have to be 0-indexed. Any node IDs used previously need to be tranlated into the ID-space for DGL. This is handled in [prepare_graph.ipynb], but you will need to do this if you use DGL for your own solutions.
+Following the dgl doc's for [making your own dataset], we subclass DGLDataset class and override the `__getitem__`, `__len__`, and `process` methods. When constructing the graph, keep in mind that node IDs have to be 0-indexed. Any node IDs used previously need to be tranlated into the ID-space for DGL. This is handled in [prepare_graph.ipynb], but you will need to do this if you use DGL for your own solutions. An example can be seen in the [graph-level](ego-graph.md#dgl-dataset) docs ([graph-classification.ipynb])
 
 ```python
 class CoraDataset(DGLDataset):
@@ -158,3 +158,4 @@ Congrats on getting to the end! A lot of problems can be modeled as a single gra
 [^1]: https://www.tigergraph.com/get-tigergraph/
 [DGL's docs]: https://docs.dgl.ai/tutorials/blitz/1_introduction.html#defining-a-graph-convolutional-network-gcn
 [Kipf's GCN paper]: https://arxiv.org/pdf/1609.02907.pdf
+[graph-classification.ipynb]: https://github.com/Optum/graph2gnn/tree/main/examples/graph-level/ego/twitch/graph-classification.ipynb
