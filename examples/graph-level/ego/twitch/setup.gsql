@@ -46,34 +46,39 @@ end
 RUN LOADING JOB load_friendships USING f="/app/tigergraph/Twitch_edges.csv"
 
 // install the query
+drop query TwitchEgosData
 begin
 CREATE QUERY TwitchEgosData(INT current_partition=0, INT total_partitions=10) FOR GRAPH TwitchEgos SYNTAX V2{
-    TYPEDEF TUPLE <INT from_id, INT to_id> Edges; // GNN train type
-    TYPEDEF TUPLE <INT id, STRING v_type> Vert; // GNN train type
-    
-    // Accumulators for tracking edges and involved vertices 
-    MaxAccum<INT> @id;
-    MapAccum<INT, SetAccum<Edges>> @@edges;
-    MapAccum<INT, SetAccum<Vert>> @@graph;
-    
-    Users = {User.*};
-    Users = SELECT s FROM Users:s 
-            WHERE vertex_to_int(s) % total_partitions == current_partition
-            ACCUM s.@id += s.id,
-              @@graph += (s.id -> Vert(s.id, s.type));
+  TYPEDEF TUPLE <INT from_id, INT to_id> Edges; // GNN train type
+  TYPEDEF TUPLE <INT id, STRING v_type> Vert; // GNN train type
+  
+  // Accumulators for tracking edges and involved vertices 
+  MaxAccum<INT> @id, @deg;
+  MapAccum<INT, SetAccum<Edges>> @@edges;
+  MapAccum<INT, SetAccum<Vert>> @@graph;
+  
+  Users = {User.*};
+  Users = SELECT s FROM Users:s 
+          WHERE vertex_to_int(s) % total_partitions == current_partition
+          ACCUM s.@id += getvid(s),
+                @@graph += (getvid(s) -> Vert(getvid(s), s.type)),
+                s.@deg += s.outdegree();
 
-    // max 2-hop graph (this should be enough to encompas all subgraphs anyway)
-    Friends1 = SELECT u FROM Users:s -(FRIENDSHIP:e)- Friend:u
-               WHERE s.label >= 0
-               ACCUM u.@id += getvid(u),
-                     @@edges += (getvid(s) -> Edges(getvid(s), getvid(u))),
-                     @@graph += (getvid(s) -> Vert(getvid(u), u.type));
-
-    Friends2 = SELECT tgt FROM Users:s -(FRIENDSHIP:e)- _:u -(FRIENDSHIP:e)- Friend:tgt
-               WHERE s.label >= 0 
-               ACCUM tgt.@id += getvid(tgt),
-                     @@edges += (getvid(s) -> Edges(getvid(u), getvid(tgt))),
-                     @@graph += (getvid(s) -> Vert(getvid(tgt), tgt.type));
+  // max 2-hop graph (this should be enough to encompas all subgraphs anyway)
+  Friends1 = SELECT f FROM Users:s -(FRIENDSHIP:e)- Friend:f
+              WHERE s.label >= 0
+              ACCUM f.@id += getvid(f),
+                    @@edges += (getvid(s) -> Edges(getvid(s), getvid(f))),
+                    @@graph += (getvid(s) -> Vert(getvid(f), f.type)),
+                    f.@deg += f.outdegree();
+                    
+  Friends2 = SELECT tgt FROM Users:s -(FRIENDSHIP:e)- _:f -(FRIENDSHIP:e)- Friend:tgt
+              WHERE s.label >= 0 
+              ACCUM tgt.@id += getvid(tgt),
+                    @@edges += (getvid(s) -> Edges(getvid(f), getvid(tgt))),
+                    @@graph += (getvid(s) -> Vert(getvid(tgt), tgt.type)),
+                    f.@deg += f.outdegree(),
+                    tgt.@deg += tgt.outdegree();
 
 	Friends = Friends1 UNION Friends2;
 	

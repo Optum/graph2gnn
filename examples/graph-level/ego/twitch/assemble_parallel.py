@@ -40,7 +40,7 @@ def make_vecs(output_path, df_dict, user):
         )
 
 
-def assemble_data(output_path):
+def assemble_data(output_path:str, parallel:bool):
     users = csv.reader(open(f"{output_path}/Users.csv"))
     next(users, None)  # skip header
     users = list(users)
@@ -50,23 +50,25 @@ def assemble_data(output_path):
     }
 
     # make one file per subgraph with all its vectors
-    make_vecs_part = partial(make_vecs, output_path, df_dict)
-    print(time.ctime())
-    with ProcessPoolExecutor() as executor:
-        executor.map(make_vecs_part, users, chunksize=20)
-
-    # single process for tests deleteme
-    # for user in tqdm(users):
-    #     make_vecs(output_path, df_dict, user)
+    if parallel:
+        make_vecs_part = partial(make_vecs, output_path, df_dict)
+        print(time.ctime())
+        with ProcessPoolExecutor() as executor:
+            executor.map(make_vecs_part, users, chunksize=20)
+    else:
+        for user in tqdm(users):
+            make_vecs(output_path, df_dict, user)
 
 
 if __name__ == "__main__":
-    # import argparse
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument("output_path")
-    # output_path = parser.parse_args().output_path
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("output_path", default="tgresponse")
+    parser.add_argument("-p",action='store_true')
+    print(parser.parse_args())
+    output_path = parser.parse_args().output_path
+    parallel = bool(parser.parse_args().p)
 
-    output_path = "tgresponse"
-
-    print(output_path)
-    assemble_data(output_path)
+    print(f'{output_path= }')
+    print(f'{parallel= }')
+    assemble_data(output_path, parallel)
