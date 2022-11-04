@@ -18,47 +18,49 @@ Once you have stood up your tigergraph instance[^1], you can generate the files 
 
 ```gsql linenums="1"
 CREATE QUERY TwitchEgosData(INT current_partition=0, INT total_partitions=10) FOR GRAPH TwitchEgos SYNTAX V2{
-    TYPEDEF TUPLE <INT from_id, INT to_id> Edges;  # GNN train type
-    TYPEDEF TUPLE <INT id, STRING v_type> Vert;    # GNN train type
+  TYPEDEF TUPLE <INT from_id, INT to_id> Edges; # GNN train type
+  TYPEDEF TUPLE <INT id, STRING v_type> Vert; # GNN train type
+  
+  # Accumulators for tracking edges and involved vertices 
+  MaxAccum<INT> @id, @deg;
+  MapAccum<INT, SetAccum<Edges>> @@edges;
+  MapAccum<INT, SetAccum<Vert>> @@graph;
+  
+  Users = {User.*};
+  Users = SELECT s FROM Users:s 
+          WHERE vertex_to_int(s) % total_partitions == current_partition
+          ACCUM s.@id += getvid(s),
+                @@graph += (getvid(s) -> Vert(getvid(s), s.type)),
+                s.@deg += s.outdegree();
 
-    # Accumulators for tracking edges and involved vertices
-    MaxAccum<INT> @id;
-    MapAccum<INT, SetAccum<Edges>> @@edges;
-    MapAccum<INT, SetAccum<Vert>> @@graph;
+  # max 2-hop graph (this should be enough to encompas all subgraphs anyway)
+  Friends1 = SELECT f FROM Users:s -(FRIENDSHIP:e)- Friend:f
+             WHERE s.label >= 0
+             ACCUM f.@id += getvid(f),
+                   @@edges += (getvid(s) -> Edges(getvid(s), getvid(f))),
+                   @@graph += (getvid(s) -> Vert(getvid(f), f.type)),
+                   f.@deg += f.outdegree();
+                    
+  Friends2 = SELECT tgt FROM Users:s -(FRIENDSHIP:e)- _:f -(FRIENDSHIP:e)- Friend:tgt
+             WHERE s.label >= 0 
+             ACCUM tgt.@id += getvid(tgt),
+                   @@edges += (getvid(s) -> Edges(getvid(f), getvid(tgt))),
+                   @@graph += (getvid(s) -> Vert(getvid(tgt), tgt.type)),
+                   f.@deg += f.outdegree(),
+                   tgt.@deg += tgt.outdegree();
 
-    Users = {User.*};
-    Users = SELECT s FROM Users:s
-            WHERE vertex_to_int(s) % total_partitions == current_partition
-            ACCUM s.@id += getvid(s),
-                  @@graph += (getvid(s) -> Vert(getvid(s), s.type));
-
-    # max 2-hop graph (this should be enough to encompas all subgraphs anyway)
-    Friends1 = SELECT u FROM Users:s -(FRIENDSHIP:e)- Friend:u
-               WHERE s.label >= 0
-               ACCUM u.@id += getvid(u),
-                     @@edges += (getvid(s) -> Edges(getvid(s), getvid(u))),
-                     @@graph += (getvid(s) -> Vert(getvid(u), u.type));
-
-    Friends2 = SELECT tgt FROM Users:s -(FRIENDSHIP:e)- _:u -(FRIENDSHIP:e)- Friend:tgt
-               WHERE s.label >= 0
-               ACCUM tgt.@id += tgt.id,
-                     @@edges += (s.id -> Edges(u.id, tgt.id)),
-                     @@graph += (s.id -> Vert(tgt.id, tgt.type));
-                     @@edges += (getvid(s) -> Edges(getvid(u), getvid(tgt))),
-                     @@graph += (getvid(s) -> Vert(getvid(tgt), tgt.type));
-
-	Friends = Friends1 UNION Friends2;
-
-    PRINT @@edges AS _edges;
-    PRINT @@graph AS _graph;
-    PRINT Users;
-    PRINT Friends;
+  Friends = Friends1 UNION Friends2;
+	
+  PRINT @@edges AS _edges; 
+  PRINT @@graph AS _graph;
+  PRINT Users;
+  PRINT Friends;
 }
 ```
 
 Lines 2 and 3 define types that graph2gnn will use to extract the graph structures from the query's response. These types allow for the minimal amount of data to be sent in the response. If you there are edge features in your dataset, add them as attributes to th `Edges` type like this: `TYPEDEF TUPLE <INT from_id, INT to_id, INT feat_name1, String INT feat_name2...> Edges;`
 
-Lines 6 through 8 instantiate global map accumulators to keep track of the adjacency information and graph membership. `@@edges` is a key-value store that holds the adjacency information of each subgraph where the ID of the subgraph's ego is the key and the values are the edges of that subgraph. `@@graph` has the same keys as edges, but its values simply store which vertices belong to which graph. This allows you to more quickly select features that go into the individual graphs when you're assembling the dataset.
+Lines 6 through 8 instantiate ID, feature (`@deg`) and global map accumulators to keep track of the adjacency information and graph membership. `@@edges` is a key-value store that holds the adjacency information of each subgraph where the ID of the subgraph's ego is the key and the values are the edges of that subgraph. `@@graph` has the same keys as edges, but its values simply store which vertices belong to which graph. This allows you to more quickly select features that go into the individual graphs when you're assembling the dataset.
 
 Lines 10 through 27 are the main body of the query. The actions to take note of are additions to the `@@edges` and `@@graph` map accums. Same as in the node-level query, you have access to all of the features of GSQL here to help you refine the subgraphs that you want.
 
