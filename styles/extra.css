@@ -1,3 +1,8 @@
 .md-footer__inner {
     display: none;
 }
+
+[data-md-color-scheme="slate"] {
+    --md-hue: 200; 
+}
+  
