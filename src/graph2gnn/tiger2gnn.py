@@ -1,11 +1,13 @@
-from typing import Any, Text, List, Dict
-import os, json
-from collections import defaultdict
-from tqdm import trange
-from time import perf_counter
-import requests as req
+import json
 import logging
+import os
+from collections import defaultdict
+from time import perf_counter
+from typing import Any, Dict, List, Text
+
 import pandas as pd
+import requests as req
+from tqdm import trange
 
 from graph2gnn.exceptions import QueryException
 
@@ -176,7 +178,7 @@ class Tiger2GNN:
                             edges_list.append([edge["from_id"], edge["to_id"]])
                         else:
                             e = [edge["from_id"], edge["to_id"]]
-                            e.extend([edge["attributes"][f] for f in edge_features])
+                            e.extend([edge[f] for f in edge_features])
                             edges_list.append(e)
 
         end = perf_counter()
