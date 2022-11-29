@@ -1,0 +1,25 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "graph2gnn"
+version = "1.0.0"
+authors = [{ name = "Rob Rossmiller" }]
+description = "Graph database to GNN training in less time"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+]
+dependencies = ["requests", "tqdm", "pandas"]
+
+[project.urls]
+"Homepage" = "https://optum.github.io/graph2gnn/"
+"Bug Tracker" = "https://github.com/Optum/graph2gnn/issues"
+
+[tool.hatch.build]
+only-packages = true
+sources = ["src"]

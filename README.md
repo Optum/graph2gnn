@@ -4,12 +4,9 @@ A library to get from a graph DB to GNN training data in less time
 Currently supported graph DBs:
 - Tigergraph
 
-Build from the source:
-```sh
-python3 -m venv venv
-source venv/bin/activate
-cd src
-python3 setup.py install
+## Installation
+```
+pip install graph2gnn
 ```
 
 ## License

@@ -64,13 +64,8 @@ Again, for an in-depth walkthough, [check out the examples](examples/examples.md
 
 ---
 ## Installation
-
-Install from the source:
-```sh
-python3 -m venv venv
-source venv/bin/activate
-cd graph2gnn/src
-python setup.py install
+```
+pip install graph2gnn
 ```
 
 ## Currently supported graph DBs
