@@ -64,6 +64,9 @@ Again, for an in-depth walkthough, [check out the examples](examples/examples.md
 
 ---
 ## Installation
+```
+pip install graph2gnn
+```
 
 Install from the source:
 ```sh
