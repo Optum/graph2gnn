@@ -9,14 +9,6 @@ Currently supported graph DBs:
 pip install graph2gnn
 ```
 
-To build from the source:
-```sh
-python3 -m venv venv
-source venv/bin/activate
-cd src
-python3 setup.py install
-```
-
 ## License
 
 [Apache License 2.0](LICENSE)

@@ -68,14 +68,6 @@ Again, for an in-depth walkthough, [check out the examples](examples/examples.md
 pip install graph2gnn
 ```
 
-Install from the source:
-```sh
-python3 -m venv venv
-source venv/bin/activate
-cd graph2gnn/src
-python setup.py install
-```
-
 ## Currently supported graph DBs
 - Tigergraph
 
