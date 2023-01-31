@@ -154,7 +154,11 @@ class Tiger2GNN:
         if num_calls is not None:
             tr = trange(num_calls)
         else:
-            tr = trange(params["total_partitions"])
+            if "total_partitions" in params.keys():
+                tr = trange(params["total_partitions"])
+            else:
+                params["total_partitions"] = 1
+                tr = trange(params["total_partitions"])
 
         query_url = f"{self.host}:9000/query/{self.graph_name}/{self.query}"
         whole_response = defaultdict(list)
@@ -229,7 +233,12 @@ class Tiger2GNN:
         if num_calls is not None:
             tr = trange(num_calls)
         else:
-            tr = trange(params["total_partitions"])
+            if "total_partitions" in params.keys():
+                tr = trange(params["total_partitions"])
+            else:
+                params["total_partitions"] = 1
+                tr = trange(params["total_partitions"])
+
 
         query_url = f"{self.host}:9000/query/{self.graph_name}/{self.query}"
         whole_response = defaultdict(list)
@@ -312,7 +321,12 @@ class Tiger2GNN:
         if num_calls is not None:
             tr = trange(num_calls)
         else:
-            tr = trange(params["total_partitions"])
+            if "total_partitions" in params.keys():
+                tr = trange(params["total_partitions"])
+            else:
+                params["total_partitions"] = 1
+                tr = trange(params["total_partitions"])
+
 
         # make the directory to save the output if it does not exist
         self._make_output_dir()
