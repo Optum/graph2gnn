@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "graph2gnn"
-version = "0.0.1"
+version = "0.0.2"
 authors = [{ name = "Rob Rossmiller" }]
 description = "Graph database to GNN training in less time"
 readme = "README.md"
